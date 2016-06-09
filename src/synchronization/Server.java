@@ -74,31 +74,27 @@ public class Server extends WebTransfer {
             } 
             currentdir1 = new TreeSet<>();
             compare.scanDir(d1, currentdir1); 
-            /*for (FileProperties fi: currentdir2) {
-                    System.out.println(fi.getPath()+" "+fi.getModifiedTime()+" "+fi.isDirectory());
-            } */
-            
-            /*in = new ObjectInputStream(dataSocket.getInputStream());
-            out = new PrintWriter(dataSocket.getOutputStream(), true); */
-            //currentdir1 = new TreeSet<>();            
-            //dir1 = new TreeSet<>();
             Synchr(currentdir1, currentdir2, dir1, dir2, conf);
-            for (FileProperties fi: SendFrom2) {
-                    System.out.println(fi.getPath()+" "+fi.getModifiedTime()+" "+fi.isDirectory());
-            }
-            if (HaveChange(currentdir1, currentdir2, dir1, dir2)){                
+            
+            if (!(SendFrom1.isEmpty() && SendFrom2.isEmpty())){                
                 System.out.println("Есть изменения, начинаем синхронизацию");
                 initFileTransferring();
-                sendFiles(dataOutput,SendFrom2,"2","1");
-                receiveFiles(dataInput,SendFrom1,"2","1");
-                //sendFile(dataOutput,"2.txt","2","1");
-                //receiveFile(dataInput,"1.txt","1","2");
-                //System.out.println("Миу");
+                if (SendFrom1.isEmpty()){                
+                sendFiles(dataOutput,SendFrom2,"2","1"); }
+                else if (SendFrom2.isEmpty()){  
+                receiveFiles(dataInput,SendFrom1,"2","1"); }
+                else {
+                    sendFiles(dataOutput,SendFrom2,"2","1");
+                    receiveFiles(dataInput,SendFrom1,"2","1");
+                } 
+                
                 deinitFileTransferring();
-            } else System.out.println("Изменений нет Server"); 
-            f2.delete();
-            compare.saveToBinaryFile(currentdir2, f2);
-            
+            } else System.out.println("Изменений нет"); 
+                f2.delete();
+                f2 = new File(t2); 
+                currentdir2 = new TreeSet<>();
+                compare.scanDir(d2, currentdir2);
+                compare.saveToBinaryFile(currentdir2, f2);            
            } catch (IOException ex) {
                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

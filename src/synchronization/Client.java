@@ -84,20 +84,25 @@ public class Client extends WebTransfer {
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-       if (HaveChange(currentdir1, currentdir2, dir1, dir2)){
-            System.out.println("Есть изменения, начинаем синхронизацию");
+       if (!(SendFrom1.isEmpty() && SendFrom2.isEmpty())){
             initFileTransferring();
-            //sendFile(dataOutput,"1.txt","1","2");
+            if (SendFrom2.isEmpty()){
             sendFiles(dataOutput,SendFrom1,"1","2");
+            } else
+            if (SendFrom1.isEmpty()){
             receiveFiles(dataInput,SendFrom2,"1","2");
-            //receiveFile(dataInput,"2.txt","2","1");
-            //System.out.println("Миу миу");
+            } else {
+                sendFiles(dataOutput,SendFrom1,"1","2");
+                receiveFiles(dataInput,SendFrom2,"1","2");
+            }
             
              deinitFileTransferring();
-        } else System.out.println("Изменений нет  Client");
+        } 
         f1.delete();
-        compare.saveToBinaryFile(currentdir1, f1);
+        f1 = new File(t1); 
+        currentdir1 = new TreeSet<>();
+        compare.scanDir(d1, currentdir1);
+        compare.saveToBinaryFile(currentdir1, f1); 
     }
     
     public void initFileTransferring() {

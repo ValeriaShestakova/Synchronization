@@ -19,9 +19,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static synchronization.compare.Copy;
 import static synchronization.compare.contain;
 
 /**
@@ -42,19 +39,20 @@ abstract class WebTransfer extends Thread {
 
 
     
-
+    /**
+     * Отправление файлов
+     * @param os выходной поток
+     * @param pth путь файла
+     */
     
-    protected void sendFile(DataOutputStream os,String pth, String from, String to) {
+    protected void sendFile(DataOutputStream os,String pth) {
         String path = pth;
-        File sourceLocation = new File(pth); //откуда
-         System.out.println("Отправляю"+pth);
-        //File targetLocation = new File(path);     //куда
+        File sourceLocation = new File(pth); 
         if (!sourceLocation.isDirectory()) {
             try (FileInputStream is = new FileInputStream(path);) {
                 File file = new File(path);
                 long length = file.length();            
-                System.out.println("Sending " + path + "("+length+"bytes)... ");
-                System.out.println("Sending"+length);
+                System.out.print("Sending " + path + "("+length+"bytes)... ");
                 os.writeLong(length);
                 byte[] buffer = new byte[1000];
                 while (true){
@@ -66,7 +64,7 @@ abstract class WebTransfer extends Thread {
                         os.write(buffer, 0, readedBytesCount);
                     }
                 }            
-                System.out.print("sending has been finished");
+                System.out.println("sending has been finished");
             } catch (SocketException ex) {
                 System.out.print("sending has been finished*");
             } catch (IOException ex) {
@@ -77,18 +75,17 @@ abstract class WebTransfer extends Thread {
         
     }
     
-        protected boolean HaveChange(Set<FileProperties> s1, Set<FileProperties> s2,  Set<FileProperties> dir1, Set<FileProperties> dir2) {
-            boolean Change = false;
-            if (!s1.equals(dir1) || !s2.equals(dir2))
-                Change = true;
-            return Change;
-        }
+        /**
+         * Принятие файла
+         * @param is входной поток
+         * @param pth путь файла
+         * @param t директория или нет
+         */
         
-        protected void receiveFile(DataInputStream is, String pth, String from, String to, boolean t) {
+        protected void receiveFile(DataInputStream is, String pth,  boolean t) {
         String path = pth;
-        File file = new File(pth); //откуда
-        File targetLocation = new File(path);     //куда
-        System.out.println("Получаю"+pth);
+        File file = new File(pth);
+        File targetLocation = new File(path); 
         if (t) {
             if (!targetLocation.exists()) {
                 targetLocation.mkdir();
@@ -112,7 +109,7 @@ abstract class WebTransfer extends Thread {
                         break;
                     }
                 }
-                System.out.print("file has been saved");
+                System.out.println("file has been saved");
                 } catch (SocketException ex) {            
                     System.out.print("file has been saved*");
                 } catch (IOException ex) {            
@@ -121,12 +118,43 @@ abstract class WebTransfer extends Thread {
              System.out.println("");
     }
 
+    /**
+     * 
+     * @param s1 текущая директория1
+     * @param s2 текущая дир2ктория 2
+     * @param dir1 прошлое состояние 1
+     * @param dir2 прошлое состояние 2
+     * @param conf 
+     * @throws IOException 
+     */
+        
     protected void Synchr(Set<FileProperties> s1, Set<FileProperties> s2,  Set<FileProperties> dir1, Set<FileProperties> dir2, Config conf) throws IOException  {
        String d1 = conf.getProperty("dir1");
        String d2 = conf.getProperty("dir2");
-       Set<FileProperties> syn = null;
+       Set<FileProperties> syn = null; 
        syn = new TreeSet<>();
-       
+       if (s2.isEmpty()){
+           for (FileProperties curdir1: s1) {
+               if(!contain((String)curdir1.getPath(), dir2)) {
+               SendFrom1.add(curdir1);
+               } else {
+                   String s = "C"+(String)curdir1.getPath();
+                    File f = new File(s);
+                    delete(f);
+               }
+           }
+       }
+       if (s1.isEmpty()){
+           for (FileProperties curdir2: s2) {
+               if(!contain((String)curdir2.getPath(), dir1)) {
+               SendFrom2.add(curdir2);
+               } else {
+                   String s = "C"+(String)curdir2.getPath();
+                                    File f = new File(s);
+                                    delete(f);
+               }
+           }
+       }
        if (s1.size() >= s2.size()) {
            for (FileProperties curdir2: s2){
                 for (FileProperties curdir1: s1) {
@@ -152,7 +180,7 @@ abstract class WebTransfer extends Thread {
                                 if(!contain((String)curdir1.getPath(), dir2)){
                                     SendFrom1.add(curdir1);
                                 } else  {
-                                    String s = d1+(String)curdir1.getPath();
+                                    String s = "C"+(String)curdir1.getPath();
                                     File f = new File(s);
                                     delete(f);
                                 } 
@@ -161,7 +189,7 @@ abstract class WebTransfer extends Thread {
                                 if(!contain((String)curdir2.getPath(), dir1)){
                                     SendFrom2.add(curdir2);
                                 }    else {
-                                    String s = d2+(String)curdir2.getPath();
+                                    String s = "C"+(String)curdir2.getPath();
                                     File f = new File(s);
                                     delete(f);
                                 } 
@@ -195,7 +223,7 @@ abstract class WebTransfer extends Thread {
                                 if(!contain((String)curdir2.getPath(), dir1)){
                                     SendFrom2.add(curdir2);
                                 } else {
-                                    String s = d2+(String)curdir2.getPath();
+                                    String s = "C"+(String)curdir2.getPath();
                                     File f = new File(s);
                                     delete(f);
                                 } 
@@ -204,7 +232,7 @@ abstract class WebTransfer extends Thread {
                                 if(!contain((String)curdir1.getPath(), dir2)){
                                     SendFrom1.add(curdir1);
                                 } else {
-                                    String s = d1+(String)curdir1.getPath();
+                                    String s = "C"+(String)curdir1.getPath();
                                     File f = new File(s);
                                     delete(f);
                                 } 
@@ -220,12 +248,13 @@ abstract class WebTransfer extends Thread {
      * Метод отправляющий файлы согласно параметрам из коллекции set, 
      * лежащие в директории dir, на поток dataOutput.
      * @param dataOutput выходной поток
-     * @param dir директория с файлами
-     * @param set параметры файлов
+     * @param set файлы
+     * @param from откуда
+     * @param to куда
      */
     protected void sendFiles(DataOutputStream dataOutput, Set<FileProperties> set, String from, String to) {   
         for (FileProperties fp : set) { //String pth, String from, String to
-            sendFile(dataOutput,"C"+(String)fp.getPath(),from,to);
+            sendFile(dataOutput,"C"+(String)fp.getPath());
         }
     }
     
@@ -233,8 +262,9 @@ abstract class WebTransfer extends Thread {
      * Метод, принимающий файлы с потока dataInput согласно параметрам из коллекции set
      * и сохраняющий их в директорию dir
      * @param dataInput входной поток
-     * @param dir директория для вставки файлов
-     * @param set параметры файлов
+     * @param set файлы
+     * @param from откуда
+     * @param to куда
      */
     protected void receiveFiles(DataInputStream dataInput,Set<FileProperties> set, String from, String to) {   
         for (FileProperties fp : set) {
@@ -243,9 +273,8 @@ abstract class WebTransfer extends Thread {
                 t = true;
             }
             String p = (String)fp.getPath();
-            //from получает
             String path = p.substring(0,18)+from+p.substring(19);
-            receiveFile(dataInput,"C"+path,to,from,t);
+            receiveFile(dataInput,"C"+path,t);
         }
     } 
     
@@ -264,6 +293,22 @@ abstract class WebTransfer extends Thread {
             {
               file.delete();
             }
+    }
+    
+    
+    public static boolean contain(String s, Set<FileProperties> dir) {
+        
+        int i = 0;
+            for (FileProperties d: dir) {
+                
+                String h = d.getPath().toString().substring(19);
+                if (h.equals(s.substring(19))) 
+                    i = i+1;
+        }
+            if (i>0) {
+            return true; }
+            else {
+                return false; }
     }
     
         /**

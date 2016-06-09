@@ -266,7 +266,8 @@ public class compare implements Runnable {
         //String s = ob1.toString();
         int i = 0;
             for (FileProperties d: dir) {
-                String h = d.getPath().toString();
+                String h = "C"+d.getPath().toString();
+                
                 if (h.equals(s)) 
                     i = i+1;
         }
