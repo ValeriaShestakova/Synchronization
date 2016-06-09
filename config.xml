@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="dir1">C:\Synchronization\1</entry>
+<entry key="dir2">C:\Synchronization\2</entry>
+<entry key="host">127.0.0.1</entry>
+<entry key="port">1</entry>
+</properties>
