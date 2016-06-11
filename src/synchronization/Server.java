@@ -10,14 +10,10 @@ package synchronization;
  * @author Valeria
  */
 import java.io.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Scanner;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -44,8 +40,30 @@ public class Server extends WebTransfer {
     
     @Override
     public void run() {
-        //BufferedReader in = null;        
+       ObjectInputStream inn = null;
+        ObjectOutputStream oos = null;
+        boolean authorizationPassed = false;
            try {            
+            Locale.setDefault(Locale.ENGLISH);
+            String log = null;
+            String passwd = null;
+            String[] loginAndPas= null;
+            initFileTransferring();
+            inn = new ObjectInputStream(dataSocket.getInputStream());
+                //String[] loginAndPas;
+           try {
+               loginAndPas = (String[]) inn.readObject();
+           } catch (ClassNotFoundException ex) {
+               Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+           }
+                log = loginAndPas[0];
+                passwd = loginAndPas[1];
+                ApplicationUser user = new ApplicationUser(log,passwd);
+                authorizationPassed = authorization(user);
+                oos = new ObjectOutputStream(dataSocket.getOutputStream());
+                if (authorizationPassed) {
+                    oos.writeObject("Connect");              
+                deinitFileTransferring();
             String t1 = "fout1.tmp";
             File f1 = new File(t1);            
             String t2 = "fout2.tmp";
@@ -94,13 +112,14 @@ public class Server extends WebTransfer {
                 f2 = new File(t2); 
                 currentdir2 = new TreeSet<>();
                 compare.scanDir(d2, currentdir2);
-                compare.saveToBinaryFile(currentdir2, f2);            
+                compare.saveToBinaryFile(currentdir2, f2); 
+           }
            } catch (IOException ex) {
                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             // ignore
-
-        }
+                }
+    
     }
     
     public void initFileTransferring() {

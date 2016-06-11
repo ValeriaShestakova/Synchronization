@@ -9,20 +9,16 @@ package synchronization;
  *
  * @author Valeria
  */
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -51,7 +47,39 @@ public class Client extends WebTransfer {
     
     @Override
     public void run() {       
-       String t1 = "fout1.tmp";
+         //connectionIsEstablished = false,
+        ObjectOutputStream oos = null;
+        ObjectInputStream inn = null;
+           boolean authorizationPassed = false;           
+        //ISyncService serverService = null;
+         Config conf = new Config("config.xml");
+         conf.loadFromXML();
+         String log = conf.getProperty("login");
+         String pswd = conf.getProperty("password");
+         initFileTransferring();
+        
+        try {
+            oos = new ObjectOutputStream(dataSocket.getOutputStream());        
+            String[] loginAndPas = {log,pswd};
+            oos.writeObject(loginAndPas);
+            inn = new ObjectInputStream(dataSocket.getInputStream());
+            } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            if (inn.readObject().equals("Connect")){
+                System.out.println("Авторизация пройдена");
+                deinitFileTransferring();
+            
+        /* Locale.setDefault(Locale.ENGLISH);
+        ApplicationUser user = new ApplicationUser(conf.getProperty("login"),conf.getProperty("password"));
+        System.out.println(conf.getProperty("login")+" "+conf.getProperty("password"));
+        try {
+            authorizationPassed = authorization(user);
+        } catch (RemoteException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } */
+            String t1 = "fout1.tmp";
             File f1 = new File(t1);            
             String t2 = "fout2.tmp";
             File f2 = new File(t2); 
@@ -59,8 +87,8 @@ public class Client extends WebTransfer {
             Set<FileProperties> dir2;
             Set<FileProperties> currentdir2;
             Set<FileProperties> currentdir1;
-            Config conf = new Config("config.xml");
-            conf.loadFromXML();
+            
+            //conf.loadFromXML();
             String d2=conf.getProperty("dir2");
             if (f2.exists()) {
             dir2 = compare.loadFromBynaryFile(f2);
@@ -79,11 +107,13 @@ public class Client extends WebTransfer {
             } 
             currentdir1 = new TreeSet<>();
             compare.scanDir(d1, currentdir1); 
+            
         try {
             Synchr(currentdir1, currentdir2, dir1, dir2, conf);
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
        if (!(SendFrom1.isEmpty() && SendFrom2.isEmpty())){
             initFileTransferring();
             if (SendFrom2.isEmpty()){
@@ -97,13 +127,21 @@ public class Client extends WebTransfer {
             }
             
              deinitFileTransferring();
-        } 
+        
+            }
         f1.delete();
         f1 = new File(t1); 
         currentdir1 = new TreeSet<>();
         compare.scanDir(d1, currentdir1);
         compare.saveToBinaryFile(currentdir1, f1); 
+           }
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+         
     
     public void initFileTransferring() {
         try {

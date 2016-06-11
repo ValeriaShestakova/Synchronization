@@ -4,14 +4,7 @@
  * and open the template in the editor.
  */
 package synchronization;
-import java.io.File;
-import java.io.IOException;
 import java.util.Scanner;
-import java.util.TreeSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author Валерия

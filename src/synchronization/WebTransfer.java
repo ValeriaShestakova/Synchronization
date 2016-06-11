@@ -9,7 +9,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,9 +16,15 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.rmi.RemoteException;
 import java.util.Set;
 import java.util.TreeSet;
-import static synchronization.compare.contain;
+import java.util.List;
+import java.util.Locale;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 
 /**
  *
@@ -27,7 +32,7 @@ import static synchronization.compare.contain;
  */
 abstract class WebTransfer extends Thread {
     protected Config config;
-    
+    boolean authorizationPassed = false;
     protected Socket dataSocket;
     protected OutputStream out;
     protected InputStream in;
@@ -44,6 +49,30 @@ abstract class WebTransfer extends Thread {
      * @param os выходной поток
      * @param pth путь файла
      */
+    
+    
+    public boolean authorization(ApplicationUser user) throws RemoteException {
+        
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("SynchronizationPU");            
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        List<ApplicationUser> users = (List<ApplicationUser>)em.createQuery("from ApplicationUser").getResultList();
+        em.getTransaction().commit();
+        em.close();
+        emf.close();
+        if (users.contains(user)) {
+            authorizationPassed = true;
+            return authorizationPassed;
+        } else {
+            authorizationPassed = false;
+            return authorizationPassed;
+        }
+    }
+    
+   
+    public boolean isAuthorizationPassed() {
+        return authorizationPassed;
+    }
     
     protected void sendFile(DataOutputStream os,String pth) {
         String path = pth;
