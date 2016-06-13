@@ -3,11 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Synchronization/src/synchronization/WebTransfer.java</file>
             <file>file:/C:/Synchronization/src/synchronization/Client.java</file>
             <file>file:/C:/Synchronization/src/synchronization/Synchronization.java</file>
-            <file>file:/C:/Synchronization/src/synchronization/ApplicationUser.java</file>
             <file>file:/C:/Synchronization/src/synchronization/Server.java</file>
+            <file>file:/C:/Synchronization/src/synchronization/ClientJFrame.java</file>
         </group>
     </open-files>
 </project-private>

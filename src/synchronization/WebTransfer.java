@@ -20,7 +20,6 @@ import java.rmi.RemoteException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.List;
-import java.util.Locale;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -157,7 +156,7 @@ abstract class WebTransfer extends Thread {
      * @throws IOException 
      */
         
-    protected void Synchr(Set<FileProperties> s1, Set<FileProperties> s2,  Set<FileProperties> dir1, Set<FileProperties> dir2, Config conf) throws IOException  {
+    public void Synchr(Set<FileProperties> s1, Set<FileProperties> s2,  Set<FileProperties> dir1, Set<FileProperties> dir2, Config conf) throws IOException  {
        String d1 = conf.getProperty("dir1");
        String d2 = conf.getProperty("dir2");
        Set<FileProperties> syn = null; 

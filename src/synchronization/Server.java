@@ -13,6 +13,9 @@ import java.io.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,7 +45,24 @@ public class Server extends WebTransfer {
     public void run() {
        ObjectInputStream inn = null;
         ObjectOutputStream oos = null;
+        String serviceName = "mySyncService";
+        Registry reg = null;
+        try {
+            reg = LocateRegistry.createRegistry(port);
+        } catch (RemoteException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
         boolean authorizationPassed = false;
+        SynService serverService = null;
+        System.out.println("Waiting for client...");
+            try {                   
+                serverService = new SynchrService();
+                serverService.setServer(this);
+                //serverService.setServerDir(serverDir);
+                reg.rebind(serviceName, serverService);
+            } catch (RemoteException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
            try {            
             Locale.setDefault(Locale.ENGLISH);
             String log = null;
@@ -124,7 +144,7 @@ public class Server extends WebTransfer {
     
     public void initFileTransferring() {
         try {
-            server = new ServerSocket(port);
+            server = new ServerSocket(port+2);
             dataSocket = server.accept();
             out = dataSocket.getOutputStream();
             in = dataSocket.getInputStream();                            
